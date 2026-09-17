@@ -3,16 +3,22 @@ const config = {
   title: 'golangforall.in',
   url: 'https://golangforall.in',
   baseUrl: '/',
-  onBrokenLinks: 'warn',      // don't fail the build on broken internal links
-  onBrokenAnchors: 'warn',    // don't fail the build on broken #anchors
-  onBrokenMarkdownLinks: 'warn', // don't fail on broken markdown links either
+
+  onBrokenLinks: 'warn',
+  onBrokenAnchors: 'warn',
+  onBrokenMarkdownLinks: 'warn',
+
   presets: [
     [
       '@docusaurus/preset-classic',
       {
-        docs: { path: 'docs' },
-        about: { path: 'about' },
-        blog: false, // dynamic posts are served via /api, not Docusaurus blog plugin
+        docs: {
+          path: 'docs',
+        },
+
+        blog: false,
+
+        pages: {},
       },
     ],
   ],
