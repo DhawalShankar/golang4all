@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '@theme/Layout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import BlogSidebar from '@site/src/components/BlogSidebar';
 
 export default function Blog() {
@@ -70,7 +71,7 @@ export default function Blog() {
         <main
           style={{
             flex: 1,
-            padding: '3rem 3rem',
+            padding: '3rem',
             minWidth: 0,
           }}
         >
@@ -105,7 +106,10 @@ export default function Blog() {
                 className="markdown"
                 style={{ marginTop: '2rem' }}
               >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
+                >
                   {activePost.content}
                 </ReactMarkdown>
               </article>
@@ -140,7 +144,12 @@ export default function Blog() {
                       </a>
                     </h2>
 
-                    <p style={{ opacity: 0.6, fontSize: '0.9rem' }}>
+                    <p
+                      style={{
+                        opacity: 0.6,
+                        fontSize: '0.9rem',
+                      }}
+                    >
                       {new Date(
                         post.createdAt
                       ).toLocaleDateString()}
