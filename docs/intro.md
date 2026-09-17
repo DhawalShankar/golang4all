@@ -52,6 +52,11 @@ there is a place for you here.
 
 The website is only the front door.
 
+Join the community on WhatsApp and follow us on Instagram:
+
+- 💬 [Join our WhatsApp Community](https://chat.whatsapp.com/G642UWUIanCJjF8jzavUPA)
+- 📸 [Follow us on Instagram](https://instagram.com/golangforall)
+
 The community lives through **meetups, conversations, workshops, projects, and the people who participate in them.**
 
 Come learn something.
