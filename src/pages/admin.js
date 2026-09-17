@@ -1,5 +1,5 @@
-// Protected admin panel — /admin (PRD §3.2). Token-gated CRUD + media upload.
-import React, { useState, useEffect } from 'react';
+// admin.js
+import React, { useState, useEffect, useRef } from 'react';
 import Layout from '@theme/Layout';
 
 export default function AdminPanel() {
@@ -8,9 +8,11 @@ export default function AdminPanel() {
   const [slug, setSlug] = useState('');
   const [content, setContent] = useState('');
   const [section, setSection] = useState('tutorials');
-  const [imageUrl, setImageUrl] = useState('');
   const [authToken, setAuthToken] = useState('');
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     if (authToken) {
@@ -21,22 +23,56 @@ export default function AdminPanel() {
     }
   }, [authToken]);
 
+  // Inserts text at the current cursor position inside the textarea,
+  // then moves the cursor to just after the inserted text.
+  const insertAtCursor = (textToInsert) => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setContent((prev) => prev + textToInsert);
+      return;
+    }
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = content.substring(0, start);
+    const after = content.substring(end);
+    const updated = before + textToInsert + after;
+    setContent(updated);
+
+    // restore focus + cursor position after React re-renders
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const cursorPos = start + textToInsert.length;
+      textarea.setSelectionRange(cursorPos, cursorPos);
+    });
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setUploading(true);
+    setError('');
+
     const formData = new FormData();
     formData.append('image', file);
 
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'X-Admin-Auth': authToken },
-      body: formData,
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setImageUrl(data.url);
-    } else {
-      setError(data.error || 'Upload failed');
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'X-Admin-Auth': authToken },
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const altText = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        insertAtCursor(`\n\n![${altText}](${data.url})\n\n`);
+      } else {
+        setError(data.error || 'Upload failed');
+      }
+    } catch (err) {
+      setError('Upload failed');
+    } finally {
+      setUploading(false);
+      e.target.value = ''; // allow re-selecting the same file again
     }
   };
 
@@ -49,7 +85,7 @@ export default function AdminPanel() {
         'Content-Type': 'application/json',
         'X-Admin-Auth': authToken,
       },
-      body: JSON.stringify({ title, slug, content, section, imageUrl }),
+      body: JSON.stringify({ title, slug, content, section }),
     });
     const data = await res.json();
     if (res.ok) {
@@ -57,7 +93,6 @@ export default function AdminPanel() {
       setTitle('');
       setSlug('');
       setContent('');
-      setImageUrl('');
     } else {
       setError(data.error || 'Create failed');
     }
@@ -107,9 +142,25 @@ export default function AdminPanel() {
             <option value="news">News</option>
             <option value="meetups">Local Meetups</option>
           </select>
-          <input type="file" accept="image/*" onChange={handleImageUpload} />
-          {imageUrl && <p>Image: <code>{imageUrl}</code></p>}
-          <textarea placeholder="Content" rows="10" value={content} onChange={(e) => setContent(e.target.value)} required />
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', opacity: 0.8 }}>
+              Insert image at cursor position in Content below
+            </label>
+            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+            {uploading && <span style={{ marginLeft: '0.5rem' }}>Uploading...</span>}
+          </div>
+
+          <textarea
+            ref={textareaRef}
+            placeholder="Content (markdown) — click anywhere here, then upload an image to insert it at that exact spot"
+            rows="16"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}
+            required
+          />
+
           <button type="submit">Publish</button>
         </form>
 
