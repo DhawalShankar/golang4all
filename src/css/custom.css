@@ -1,5 +1,8 @@
-/* Branded theme overrides go here (PRD §3.1 — distinct from any .com site). */
 .markdown-body img {
   max-width: 100%;
   height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+  margin: 1.5rem auto;
 }
