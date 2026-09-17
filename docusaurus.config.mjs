@@ -24,6 +24,8 @@ const config = {
   ],
 
   themeConfig: {
+    favicon: 'img/logo.png',
+
     navbar: {
       title: 'GolangForAll',
       logo: {
