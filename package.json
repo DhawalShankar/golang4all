@@ -1,0 +1,16 @@
+{
+  "name": "golangforall-in",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.x",
+    "@docusaurus/preset-classic": "^3.x",
+    "react": "^18.x",
+    "react-dom": "^18.x"
+  }
+}

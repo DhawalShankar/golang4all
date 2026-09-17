@@ -1,0 +1,16 @@
+// Minimal Docusaurus config. Fill in title, tagline, URL, and theme details
+// as the branded interface (PRD §3.1) is designed.
+module.exports = {
+  title: 'golangforall.in',
+  url: 'https://golangforall.in',
+  baseUrl: '/',
+  presets: [
+    [
+      '@docusaurus/preset-classic',
+      {
+        docs: { path: 'docs' },
+        blog: false, // dynamic posts are served via /api, not Docusaurus blog plugin
+      },
+    ],
+  ],
+};
