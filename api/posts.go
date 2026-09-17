@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"golangforall.in/internal/db"
+	"golangforall.in/pkg/db"
 )
 
 type BlogPost struct {
