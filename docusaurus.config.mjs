@@ -21,16 +21,32 @@ const config = {
       },
     ],
   ],
-  
+
   themeConfig: {
     favicon: 'img/favicon.ico',
 
     navbar: {
       title: 'GolangForAll',
-      logo: { alt: 'GolangForAll Logo', src: 'img/logo.png' },
+      logo: {
+        alt: 'GolangForAll Logo',
+        src: 'img/logo.png',
+      },
       items: [
-        { to: '/blog', label: 'Blog', position: 'left' },
-        { to: '/docs/intro', label: 'Docs', position: 'left' },
+        {
+          to: '/about',
+          label: 'About',
+          position: 'left',
+        },
+        {
+          to: '/blog',
+          label: 'Blog',
+          position: 'left',
+        },
+        {
+          to: '/docs/intro',
+          label: 'Docs',
+          position: 'left',
+        },
       ],
     },
   },

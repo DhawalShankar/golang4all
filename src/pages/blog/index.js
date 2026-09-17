@@ -1,78 +1,157 @@
-// src/pages/blog/index.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '@theme/Layout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import BlogSidebar from '@site/src/components/BlogSidebar';
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSlug, setActiveSlug] = useState(null);
+  const [activeSection, setActiveSection] = useState(null);
 
   useEffect(() => {
-    // Client-side query param read (no server routing needed here)
     const params = new URLSearchParams(window.location.search);
+
     setActiveSlug(params.get('slug'));
+    setActiveSection(params.get('section'));
 
     fetch('/api/posts')
       .then((res) => res.json())
       .then((data) => setPosts(Array.isArray(data) ? data : []))
+      .catch(() => setPosts([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const selectSection = (section) => {
+    setActiveSlug(null);
+    setActiveSection(section);
+
+    const url = section
+      ? `/blog?section=${section}`
+      : '/blog';
+
+    window.history.pushState({}, '', url);
+  };
 
   if (loading) {
     return (
       <Layout title="Blog">
-        <div style={{ padding: '3rem', textAlign: 'center' }}>Loading...</div>
+        <div style={{ padding: '3rem', textAlign: 'center' }}>
+          Loading...
+        </div>
       </Layout>
     );
   }
 
-  // Detail view: /blog?slug=your-slug
-  if (activeSlug) {
-    const post = posts.find((p) => p.slug === activeSlug);
-    if (!post) {
-      return (
-        <Layout title="Not Found">
-          <div style={{ padding: '3rem', textAlign: 'center' }}>Post not found.</div>
-        </Layout>
-      );
-    }
-    return (
-      <Layout title={post.title}>
-        <main style={{ padding: '3rem 2rem', maxWidth: '720px', margin: '0 auto' }}>
-          <a href="/blog">← Back to all posts</a>
-          <h1 style={{ marginTop: '1rem' }}>{post.title}</h1>
-          <p style={{ opacity: 0.6, fontSize: '0.85rem' }}>
-            {post.section} · {new Date(post.createdAt).toLocaleDateString()}
-          </p>
-          <div className="markdown-body" style={{ marginTop: '2rem' }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
-          </div>
-        </main>
-      </Layout>
-    );
-  }
+  const filteredPosts = activeSection
+    ? posts.filter((post) => post.section === activeSection)
+    : posts;
 
-  // List view: /blog
+  const activePost = activeSlug
+    ? posts.find((post) => post.slug === activeSlug)
+    : null;
+
   return (
-    <Layout title="Blog">
-      <main style={{ padding: '3rem 2rem', maxWidth: '720px', margin: '0 auto' }}>
-        <h1>Blog</h1>
-        {posts.length === 0 && <p>No posts yet.</p>}
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {posts.map((post) => (
-            <li key={post.id} style={{ marginBottom: '1.5rem' }}>
-              <a href={`/blog?slug=${post.slug}`} style={{ fontSize: '1.2rem', fontWeight: 600 }}>
-                {post.title}
-              </a>
-              <p style={{ opacity: 0.6, fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
-                {post.section} · {new Date(post.createdAt).toLocaleDateString()}
+    <Layout title={activePost ? activePost.title : 'Blog'}>
+      <div
+        style={{
+          display: 'flex',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          minHeight: '70vh',
+        }}
+      >
+        <BlogSidebar
+          activeSection={activeSection}
+          onSelect={selectSection}
+        />
+
+        <main
+          style={{
+            flex: 1,
+            padding: '3rem 3rem',
+            minWidth: 0,
+          }}
+        >
+          {activePost ? (
+            <>
+              <button
+                onClick={() => {
+                  setActiveSlug(null);
+                  window.history.pushState({}, '', '/blog');
+                }}
+                style={{
+                  border: 'none',
+                  background: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  color: 'var(--ifm-color-primary)',
+                }}
+              >
+                ← Back to Blog
+              </button>
+
+              <h1 style={{ marginTop: '1.5rem' }}>
+                {activePost.title}
+              </h1>
+
+              <p style={{ opacity: 0.6 }}>
+                {activePost.section} ·{' '}
+                {new Date(activePost.createdAt).toLocaleDateString()}
               </p>
-            </li>
-          ))}
-        </ul>
-      </main>
+
+              <article
+                className="markdown"
+                style={{ marginTop: '2rem' }}
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {activePost.content}
+                </ReactMarkdown>
+              </article>
+            </>
+          ) : (
+            <>
+              <h1>
+                {activeSection
+                  ? filteredPosts[0]?.section || 'Blog'
+                  : 'Blog'}
+              </h1>
+
+              {filteredPosts.length === 0 ? (
+                <p>No posts yet.</p>
+              ) : (
+                filteredPosts.map((post) => (
+                  <article
+                    key={post.id}
+                    style={{
+                      marginBottom: '2rem',
+                      paddingBottom: '1.5rem',
+                      borderBottom:
+                        '1px solid var(--ifm-color-emphasis-200)',
+                    }}
+                  >
+                    <h2 style={{ marginBottom: '0.4rem' }}>
+                      <a
+                        href={`/blog?slug=${post.slug}`}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        {post.title}
+                      </a>
+                    </h2>
+
+                    <p style={{ opacity: 0.6, fontSize: '0.9rem' }}>
+                      {new Date(
+                        post.createdAt
+                      ).toLocaleDateString()}
+                    </p>
+                  </article>
+                ))
+              )}
+            </>
+          )}
+        </main>
+      </div>
     </Layout>
   );
 }
