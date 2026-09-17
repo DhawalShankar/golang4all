@@ -3,7 +3,6 @@ import Layout from '@theme/Layout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import './blog.css';
 
 const sections = [
   ['fundamentals', 'Fundamentals'],
@@ -23,16 +22,13 @@ function slugify(text) {
     .replace(/\s+/g, '-');
 }
 
-function getHeadingText(children) {
-  if (Array.isArray(children)) {
-    return children
-      .map((child) =>
-        typeof child === 'string' ? child : ''
-      )
-      .join('');
-  }
-
-  return typeof children === 'string' ? children : '';
+function getText(children) {
+  return React.Children.toArray(children)
+    .map((child) => {
+      if (typeof child === 'string') return child;
+      return '';
+    })
+    .join('');
 }
 
 export default function Blog() {
@@ -50,15 +46,11 @@ export default function Blog() {
     };
 
     readUrl();
-
     window.addEventListener('popstate', readUrl);
 
     fetch('/api/posts')
       .then((res) => {
-        if (!res.ok) {
-          throw new Error('Failed to fetch posts');
-        }
-
+        if (!res.ok) throw new Error('Failed to fetch posts');
         return res.json();
       })
       .then((data) => {
@@ -78,7 +70,6 @@ export default function Blog() {
 
   const navigate = (params = {}) => {
     const query = new URLSearchParams(params).toString();
-
     const url = query ? `/blog?${query}` : '/blog';
 
     window.history.pushState({}, '', url);
@@ -95,9 +86,7 @@ export default function Blog() {
   const activePost = useMemo(() => {
     if (!activeSlug) return null;
 
-    return posts.find(
-      (post) => post.slug === activeSlug
-    );
+    return posts.find((post) => post.slug === activeSlug);
   }, [posts, activeSlug]);
 
   const filteredPosts = useMemo(() => {
@@ -111,53 +100,61 @@ export default function Blog() {
   const headings = useMemo(() => {
     if (!activePost) return [];
 
-    return [
-      ...activePost.content.matchAll(
-        /^(#{2,3})\s+(.+)$/gm
-      ),
-    ].map((match) => {
-      const hashes = match[1];
-      const text = match[2].trim();
+    return [...activePost.content.matchAll(/^(#{2,3})\s+(.+)$/gm)]
+      .map((match) => {
+        const level = match[1].length;
+        const text = match[2].trim();
 
-      return {
-        level: hashes.length,
-        text,
-        id: slugify(text),
-      };
-    });
+        return {
+          level,
+          text,
+          id: slugify(text),
+        };
+      });
   }, [activePost]);
 
   if (loading) {
     return (
       <Layout title="Blog">
-        <main className="blog-page">
-          <div className="container">
-            <div className="blog-loading">
-              Loading...
-            </div>
-          </div>
-        </main>
+        <div className="container margin-vert--lg">
+          <p>Loading...</p>
+        </div>
       </Layout>
     );
   }
 
   return (
     <Layout title={activePost?.title || 'Blog'}>
-      <main className="blog-page">
-        <div className="container">
-          <div className="row">
+      <div className="theme-doc-layout">
 
-            {/* LEFT SIDEBAR */}
-            <aside className="col col--3 blog-sidebar">
-              <div className="blog-sidebar-inner">
-                <h2 className="blog-sidebar-title">
-                  Blog
-                </h2>
+        {/* LEFT SIDEBAR */}
+        <aside className="theme-doc-sidebar-container">
+          <div className="theme-doc-sidebar-menu">
+            <nav
+              className="menu thin-scrollbar"
+              aria-label="Blog sections"
+            >
+              <ul className="theme-doc-sidebar-menu menu__list">
+                <li>
+                  <a
+                    href="/blog"
+                    className={
+                      !activeSection && !activeSlug
+                        ? 'menu__link menu__link--active'
+                        : 'menu__link'
+                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate({});
+                    }}
+                  >
+                    GolangForAll
+                  </a>
+                </li>
 
-                <nav aria-label="Blog sections">
-                  {sections.map(([value, label]) => (
+                {sections.map(([value, label]) => (
+                  <li key={value}>
                     <a
-                      key={value}
                       href={`/blog?section=${value}`}
                       className={
                         activeSection === value
@@ -171,196 +168,215 @@ export default function Blog() {
                     >
                       {label}
                     </a>
-                  ))}
-                </nav>
-              </div>
-            </aside>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+        </aside>
 
-            {/* MAIN CONTENT */}
-            <main className="col col--7 blog-content">
+        {/* MAIN DOCUMENT AREA */}
+        <main className="docMainContainer">
 
-              {activePost ? (
-                <>
-                  {/* Breadcrumbs */}
-                  <nav
-                    className="theme-doc-breadcrumbs breadcrumbs"
-                    aria-label="Breadcrumbs"
-                  >
-                    <a
-                      href="/blog"
-                      className="breadcrumbs__link"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate({});
-                      }}
-                    >
-                      Blog
-                    </a>
+          <div className="container padding-top--md padding-bottom--lg">
+            <div className="row">
 
-                    <span className="breadcrumbs__item breadcrumbs__item--active">
-                      <span className="breadcrumbs__link">
-                        {activePost.title}
-                      </span>
-                    </span>
-                  </nav>
+              <div className="col docItemCol">
+                <div className="docItemContainer">
 
-                  {/* Article */}
-                  <article>
-                    <header className="blog-post-header">
-                      <h1>{activePost.title}</h1>
+                  {activePost ? (
+                    <article>
 
-                      <div className="blog-post-meta">
-                        {sections.find(
-                          ([value]) =>
-                            value === activePost.section
-                        )?.[1] || activePost.section}
-
-                        {' · '}
-
-                        {new Date(
-                          activePost.createdAt
-                        ).toLocaleDateString()}
-                      </div>
-                    </header>
-
-                    <div className="theme-doc-markdown markdown">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[rehypeRaw]}
-                        components={{
-                          h2: ({
-                            children,
-                            ...props
-                          }) => {
-                            const text =
-                              getHeadingText(children);
-
-                            return (
-                              <h2
-                                id={slugify(text)}
-                                {...props}
-                              >
-                                {children}
-                              </h2>
-                            );
-                          },
-
-                          h3: ({
-                            children,
-                            ...props
-                          }) => {
-                            const text =
-                              getHeadingText(children);
-
-                            return (
-                              <h3
-                                id={slugify(text)}
-                                {...props}
-                              >
-                                {children}
-                              </h3>
-                            );
-                          },
-                        }}
+                      {/* Breadcrumbs */}
+                      <nav
+                        className="theme-doc-breadcrumbs breadcrumbs"
+                        aria-label="Breadcrumbs"
                       >
-                        {activePost.content}
-                      </ReactMarkdown>
-                    </div>
-                  </article>
-                </>
-              ) : (
-                <>
-                  <nav className="theme-doc-breadcrumbs breadcrumbs">
-                    <span className="breadcrumbs__item breadcrumbs__item--active">
-                      <span className="breadcrumbs__link">
-                        Blog
-                      </span>
-                    </span>
-                  </nav>
-
-                  <header className="blog-list-header">
-                    <h1>
-                      {activeSection
-                        ? sections.find(
-                            ([value]) =>
-                              value === activeSection
-                          )?.[1] || 'Blog'
-                        : 'Blog'}
-                    </h1>
-                  </header>
-
-                  {filteredPosts.length === 0 ? (
-                    <p>No posts yet.</p>
-                  ) : (
-                    <div className="blog-post-list">
-                      {filteredPosts.map((post) => (
-                        <article
-                          key={post.id}
-                          className="blog-post-card"
-                        >
-                          <h2>
-                            <a
-                              href={`/blog?slug=${post.slug}`}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate({
-                                  slug: post.slug,
-                                });
-                              }}
-                            >
-                              {post.title}
-                            </a>
-                          </h2>
-
-                          <div className="blog-post-meta">
-                            {sections.find(
-                              ([value]) =>
-                                value === post.section
-                            )?.[1] || post.section}
-
-                            {' · '}
-
-                            {new Date(
-                              post.createdAt
-                            ).toLocaleDateString()}
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </main>
-
-            {/* RIGHT TOC */}
-            <aside className="col col--2 blog-toc">
-              {activePost && headings.length > 0 && (
-                <div className="blog-toc-inner">
-                  <h3>On this page</h3>
-
-                  <ul className="table-of-contents">
-                    {headings.map((heading) => (
-                      <li key={heading.id}>
                         <a
-                          href={`#${heading.id}`}
-                          className={
-                            heading.level === 3
-                              ? 'blog-toc-nested'
-                              : ''
-                          }
+                          href="/blog"
+                          className="breadcrumbs__link"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigate({});
+                          }}
                         >
-                          {heading.text}
+                          Blog
                         </a>
-                      </li>
-                    ))}
-                  </ul>
+
+                        <span className="breadcrumbs__item breadcrumbs__item--active">
+                          <span className="breadcrumbs__link">
+                            {activePost.title}
+                          </span>
+                        </span>
+                      </nav>
+
+                      {/* Title */}
+                      <header>
+                        <h1>{activePost.title}</h1>
+
+                        <div className="theme-doc-version-badge">
+                          {sections.find(
+                            ([value]) =>
+                              value === activePost.section
+                          )?.[1] || activePost.section}
+                          {' · '}
+                          {new Date(
+                            activePost.createdAt
+                          ).toLocaleDateString()}
+                        </div>
+                      </header>
+
+                      {/* Markdown */}
+                      <div className="theme-doc-markdown markdown">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          rehypePlugins={[rehypeRaw]}
+                          components={{
+                            h2: ({
+                              children,
+                              ...props
+                            }) => {
+                              const text =
+                                getText(children);
+
+                              return (
+                                <h2
+                                  id={slugify(text)}
+                                  {...props}
+                                >
+                                  {children}
+                                </h2>
+                              );
+                            },
+
+                            h3: ({
+                              children,
+                              ...props
+                            }) => {
+                              const text =
+                                getText(children);
+
+                              return (
+                                <h3
+                                  id={slugify(text)}
+                                  {...props}
+                                >
+                                  {children}
+                                </h3>
+                              );
+                            },
+                          }}
+                        >
+                          {activePost.content}
+                        </ReactMarkdown>
+                      </div>
+
+                    </article>
+                  ) : (
+                    <article>
+
+                      <nav
+                        className="theme-doc-breadcrumbs breadcrumbs"
+                        aria-label="Breadcrumbs"
+                      >
+                        <span className="breadcrumbs__item breadcrumbs__item--active">
+                          <span className="breadcrumbs__link">
+                            Blog
+                          </span>
+                        </span>
+                      </nav>
+
+                      <header>
+                        <h1>
+                          {activeSection
+                            ? sections.find(
+                                ([value]) =>
+                                  value === activeSection
+                              )?.[1] || 'Blog'
+                            : 'Blog'}
+                        </h1>
+                      </header>
+
+                      <div className="theme-doc-markdown markdown">
+                        {filteredPosts.length === 0 ? (
+                          <p>No posts yet.</p>
+                        ) : (
+                          filteredPosts.map((post) => (
+                            <div key={post.id}>
+                              <h2>
+                                <a
+                                  href={`/blog?slug=${post.slug}`}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate({
+                                      slug: post.slug,
+                                    });
+                                  }}
+                                >
+                                  {post.title}
+                                </a>
+                              </h2>
+
+                              <p>
+                                <small>
+                                  {sections.find(
+                                    ([value]) =>
+                                      value === post.section
+                                  )?.[1] ||
+                                    post.section}
+                                  {' · '}
+                                  {new Date(
+                                    post.createdAt
+                                  ).toLocaleDateString()}
+                                </small>
+                              </p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                    </article>
+                  )}
+
+                </div>
+              </div>
+
+              {/* RIGHT TOC */}
+              {activePost && headings.length > 0 && (
+                <div className="col col--3">
+                  <div className="tableOfContents">
+                    <nav
+                      className="table-of-contents"
+                      aria-label="On this page"
+                    >
+                      <h3>On this page</h3>
+
+                      <ul>
+                        {headings.map((heading) => (
+                          <li key={heading.id}>
+                            <a
+                              href={`#${heading.id}`}
+                              className={
+                                heading.level === 3
+                                  ? 'table-of-contents__link toc-nested'
+                                  : 'table-of-contents__link'
+                              }
+                            >
+                              {heading.text}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </nav>
+                  </div>
                 </div>
               )}
-            </aside>
 
+            </div>
           </div>
-        </div>
-      </main>
+
+        </main>
+      </div>
     </Layout>
   );
 }
