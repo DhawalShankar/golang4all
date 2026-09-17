@@ -3,19 +3,28 @@ import Layout from '@theme/Layout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import BlogSidebar from '@site/src/components/BlogSidebar';
+
+const sections = [
+  ['fundamentals', 'Fundamentals'],
+  ['backend', 'Backend Engineering'],
+  ['systems', 'Systems & Concurrency'],
+  ['projects', 'Build Logs'],
+  ['now', 'Now'],
+  ['meetups', 'Meetups'],
+  ['announcements', 'Announcements'],
+];
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeSlug, setActiveSlug] = useState(null);
-  const [activeSection, setActiveSection] = useState(null);
+  const [slug, setSlug] = useState(null);
+  const [section, setSection] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
-    setActiveSlug(params.get('slug'));
-    setActiveSection(params.get('section'));
+    setSlug(params.get('slug'));
+    setSection(params.get('section'));
 
     fetch('/api/posts')
       .then((res) => res.json())
@@ -24,142 +33,167 @@ export default function Blog() {
       .finally(() => setLoading(false));
   }, []);
 
-  const selectSection = (section) => {
-    setActiveSlug(null);
-    setActiveSection(section);
+  const navigate = (params) => {
+    const query = new URLSearchParams(params).toString();
+    window.history.pushState(
+      {},
+      '',
+      query ? `/blog?${query}` : '/blog'
+    );
 
-    const url = section
-      ? `/blog?section=${section}`
-      : '/blog';
-
-    window.history.pushState({}, '', url);
+    setSlug(params.slug || null);
+    setSection(params.section || null);
   };
 
   if (loading) {
     return (
       <Layout title="Blog">
-        <div style={{ padding: '3rem', textAlign: 'center' }}>
-          Loading...
+        <div className="container margin-vert--lg">
+          <p>Loading...</p>
         </div>
       </Layout>
     );
   }
 
-  const filteredPosts = activeSection
-    ? posts.filter((post) => post.section === activeSection)
-    : posts;
-
-  const activePost = activeSlug
-    ? posts.find((post) => post.slug === activeSlug)
+  const activePost = slug
+    ? posts.find((post) => post.slug === slug)
     : null;
 
+  const filteredPosts = section
+    ? posts.filter((post) => post.section === section)
+    : posts;
+
   return (
-    <Layout title={activePost ? activePost.title : 'Blog'}>
-      <div
-        style={{
-          display: 'flex',
-          maxWidth: '1200px',
-          margin: '0 auto',
-          minHeight: '70vh',
-        }}
-      >
-        <BlogSidebar
-          activeSection={activeSection}
-          onSelect={selectSection}
-        />
+    <Layout title={activePost?.title || 'Blog'}>
+      <div className="container">
+        <div className="row">
+          {/* Sidebar */}
+          <aside className="col col--3">
+            <div
+              style={{
+                position: 'sticky',
+                top: 'calc(var(--ifm-navbar-height) + 1rem)',
+              }}
+            >
+              <h3>Blog</h3>
 
-        <main
-          style={{
-            flex: 1,
-            padding: '3rem',
-            minWidth: 0,
-          }}
-        >
-          {activePost ? (
-            <>
-              <button
-                onClick={() => {
-                  setActiveSlug(null);
-                  window.history.pushState({}, '', '/blog');
-                }}
-                style={{
-                  border: 'none',
-                  background: 'none',
-                  padding: 0,
-                  cursor: 'pointer',
-                  color: 'var(--ifm-color-primary)',
-                }}
-              >
-                ← Back to Blog
-              </button>
-
-              <h1 style={{ marginTop: '1.5rem' }}>
-                {activePost.title}
-              </h1>
-
-              <p style={{ opacity: 0.6 }}>
-                {activePost.section} ·{' '}
-                {new Date(activePost.createdAt).toLocaleDateString()}
-              </p>
-
-              <article
-                className="markdown"
-                style={{ marginTop: '2rem' }}
-              >
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw]}
-                >
-                  {activePost.content}
-                </ReactMarkdown>
-              </article>
-            </>
-          ) : (
-            <>
-              <h1>
-                {activeSection
-                  ? filteredPosts[0]?.section || 'Blog'
-                  : 'Blog'}
-              </h1>
-
-              {filteredPosts.length === 0 ? (
-                <p>No posts yet.</p>
-              ) : (
-                filteredPosts.map((post) => (
-                  <article
-                    key={post.id}
-                    style={{
-                      marginBottom: '2rem',
-                      paddingBottom: '1.5rem',
-                      borderBottom:
-                        '1px solid var(--ifm-color-emphasis-200)',
+              <nav>
+                {sections.map(([value, label]) => (
+                  <a
+                    key={value}
+                    href={`/blog?section=${value}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate({ section: value });
                     }}
+                    className={
+                      section === value
+                        ? 'menu__link menu__link--active'
+                        : 'menu__link'
+                    }
                   >
-                    <h2 style={{ marginBottom: '0.4rem' }}>
-                      <a
-                        href={`/blog?slug=${post.slug}`}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        {post.title}
-                      </a>
-                    </h2>
+                    {label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </aside>
 
-                    <p
-                      style={{
-                        opacity: 0.6,
-                        fontSize: '0.9rem',
-                      }}
-                    >
+          {/* Content */}
+          <main className="col col--7">
+            {activePost ? (
+              <>
+                <nav className="theme-doc-breadcrumbs breadcrumbs">
+                  <a
+                    href="/blog"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate({});
+                    }}
+                    className="breadcrumbs__link"
+                  >
+                    Blog
+                  </a>
+
+                  <span className="breadcrumbs__item breadcrumbs__item--active">
+                    <span className="breadcrumbs__link">
+                      {activePost.title}
+                    </span>
+                  </span>
+                </nav>
+
+                <article>
+                  <header>
+                    <h1>{activePost.title}</h1>
+
+                    <p style={{ opacity: 0.65 }}>
+                      {sections.find(
+                        ([value]) => value === activePost.section
+                      )?.[1] || activePost.section}
+                      {' · '}
                       {new Date(
-                        post.createdAt
+                        activePost.createdAt
                       ).toLocaleDateString()}
                     </p>
-                  </article>
-                ))
-              )}
-            </>
-          )}
-        </main>
+                  </header>
+
+                  <div className="theme-doc-markdown markdown">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw]}
+                    >
+                      {activePost.content}
+                    </ReactMarkdown>
+                  </div>
+                </article>
+              </>
+            ) : (
+              <>
+                <h1>
+                  {section
+                    ? sections.find(
+                        ([value]) => value === section
+                      )?.[1]
+                    : 'Blog'}
+                </h1>
+
+                {filteredPosts.length === 0 ? (
+                  <p>No posts yet.</p>
+                ) : (
+                  <div>
+                    {filteredPosts.map((post) => (
+                      <article
+                        key={post.id}
+                        className="margin-bottom--lg"
+                      >
+                        <h2>
+                          <a
+                            href={`/blog?slug=${post.slug}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate({ slug: post.slug });
+                            }}
+                          >
+                            {post.title}
+                          </a>
+                        </h2>
+
+                        <p style={{ opacity: 0.65 }}>
+                          {new Date(
+                            post.createdAt
+                          ).toLocaleDateString()}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </main>
+
+          {/* Right spacing / future TOC */}
+          <div className="col col--2" />
+        </div>
       </div>
     </Layout>
   );
