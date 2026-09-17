@@ -69,7 +69,4 @@ Come build something.
 
 ---
 
-> **Learn. Build. Share. Meet.**
-
-**GolangForAll**
-*The Go community for everyone.*
+> *The Go community for everyone.*

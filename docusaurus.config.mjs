@@ -1,6 +1,6 @@
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'golangforall.in',
+  title: 'GolangForAll',
   url: 'https://golangforall.in',
   baseUrl: '/',
 
@@ -22,6 +22,16 @@ const config = {
       },
     ],
   ],
+
+  themeConfig: {
+    navbar: {
+      title: 'GolangForAll',
+      logo: {
+        alt: 'GolangForAll Logo',
+        src: 'img/logo.png',
+      },
+    },
+  },
 };
 
 export default config;
