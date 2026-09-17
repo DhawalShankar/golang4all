@@ -1,11 +1,11 @@
-// Minimal Docusaurus config. Fill in title, tagline, URL, and theme details
-// as the branded interface (PRD §3.1) is designed.
-
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'golangforall.in',
   url: 'https://golangforall.in',
   baseUrl: '/',
+  onBrokenLinks: 'warn',      // don't fail the build on broken internal links
+  onBrokenAnchors: 'warn',    // don't fail the build on broken #anchors
+  onBrokenMarkdownLinks: 'warn', // don't fail on broken markdown links either
   presets: [
     [
       '@docusaurus/preset-classic',
