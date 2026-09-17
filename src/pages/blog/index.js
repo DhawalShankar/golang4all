@@ -3,33 +3,24 @@ import Layout from '@theme/Layout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import BlogSidebar from '@site/src/components/BlogSidebar';
 
-const sections = [
-  ['fundamentals', 'Fundamentals'],
-  ['backend', 'Backend Engineering'],
-  ['systems', 'Systems & Concurrency'],
-  ['projects', 'Build Logs'],
-  ['now', 'Now'],
-  ['meetups', 'Meetups'],
-  ['announcements', 'Announcements'],
-];
+const sectionNames = {
+  fundamentals: 'Fundamentals',
+  backend: 'Backend Engineering',
+  systems: 'Systems & Concurrency',
+  projects: 'Build Logs',
+  now: 'Now',
+  meetups: 'Meetups',
+  announcements: 'Announcements',
+};
 
-function slugify(text) {
-  return String(text)
+const slugify = (text) =>
+  text
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-');
-}
-
-function getText(children) {
-  return React.Children.toArray(children)
-    .map((child) => {
-      if (typeof child === 'string') return child;
-      return '';
-    })
-    .join('');
-}
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
@@ -46,6 +37,7 @@ export default function Blog() {
     };
 
     readUrl();
+
     window.addEventListener('popstate', readUrl);
 
     fetch('/api/posts')
@@ -101,282 +93,202 @@ export default function Blog() {
     if (!activePost) return [];
 
     return [...activePost.content.matchAll(/^(#{2,3})\s+(.+)$/gm)]
-      .map((match) => {
-        const level = match[1].length;
-        const text = match[2].trim();
-
-        return {
-          level,
-          text,
-          id: slugify(text),
-        };
-      });
+      .map((match) => ({
+        level: match[1].length,
+        text: match[2].trim(),
+        id: slugify(match[2]),
+      }));
   }, [activePost]);
 
   if (loading) {
     return (
       <Layout title="Blog">
-        <div className="container margin-vert--lg">
-          <p>Loading...</p>
-        </div>
+        <div className="blog-loading">Loading...</div>
       </Layout>
     );
   }
 
   return (
     <Layout title={activePost?.title || 'Blog'}>
-      <div className="theme-doc-layout">
 
-        {/* LEFT SIDEBAR */}
-        <aside className="theme-doc-sidebar-container">
-          <div className="theme-doc-sidebar-menu">
-            <nav
-              className="menu thin-scrollbar"
-              aria-label="Blog sections"
-            >
-              <ul className="theme-doc-sidebar-menu menu__list">
-                <li>
-                  <a
-                    href="/blog"
-                    className={
-                      !activeSection && !activeSlug
-                        ? 'menu__link menu__link--active'
-                        : 'menu__link'
-                    }
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate({});
+      <div className="blog-layout">
+
+        {/* LEFT BLOG SIDEBAR */}
+        <aside className="blog-sidebar">
+          <BlogSidebar
+            activeSection={activeSection}
+            onSelect={(section) => {
+              navigate(
+                section
+                  ? { section }
+                  : {}
+              );
+            }}
+          />
+        </aside>
+
+        {/* MAIN CONTENT */}
+        <main className="blog-main">
+
+          <div className="blog-content">
+
+            {/* BREADCRUMBS */}
+            <nav className="breadcrumbs">
+              <a
+                href="/blog"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate({});
+                }}
+              >
+                Blog
+              </a>
+
+              {activePost && (
+                <>
+                  <span>›</span>
+
+                  <span className="breadcrumb-active">
+                    {activePost.title}
+                  </span>
+                </>
+              )}
+            </nav>
+
+            {/* POST */}
+            {activePost ? (
+              <>
+                <article className="theme-doc-markdown markdown">
+
+                  <h1>{activePost.title}</h1>
+
+                  <p className="blog-meta">
+                    {sectionNames[activePost.section] ||
+                      activePost.section}
+                    {' · '}
+                    {new Date(
+                      activePost.createdAt
+                    ).toLocaleDateString()}
+                  </p>
+
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
+                    components={{
+                      h2: ({ children, ...props }) => {
+                        const text = String(children);
+
+                        return (
+                          <h2
+                            id={slugify(text)}
+                            {...props}
+                          >
+                            {children}
+                          </h2>
+                        );
+                      },
+
+                      h3: ({ children, ...props }) => {
+                        const text = String(children);
+
+                        return (
+                          <h3
+                            id={slugify(text)}
+                            {...props}
+                          >
+                            {children}
+                          </h3>
+                        );
+                      },
                     }}
                   >
-                    GolangForAll
-                  </a>
-                </li>
+                    {activePost.content}
+                  </ReactMarkdown>
 
-                {sections.map(([value, label]) => (
-                  <li key={value}>
-                    <a
-                      href={`/blog?section=${value}`}
-                      className={
-                        activeSection === value
-                          ? 'menu__link menu__link--active'
-                          : 'menu__link'
-                      }
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate({ section: value });
-                      }}
-                    >
-                      {label}
+                </article>
+              </>
+            ) : (
+              <>
+                <article className="theme-doc-markdown markdown">
+
+                  <h1>
+                    {activeSection
+                      ? sectionNames[activeSection] ||
+                        activeSection
+                      : 'Blog'}
+                  </h1>
+
+                  {filteredPosts.length === 0 ? (
+                    <p>No posts yet.</p>
+                  ) : (
+                    filteredPosts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="blog-post-preview"
+                      >
+                        <h2>
+                          <a
+                            href={`/blog?slug=${post.slug}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+
+                              navigate({
+                                slug: post.slug,
+                              });
+                            }}
+                          >
+                            {post.title}
+                          </a>
+                        </h2>
+
+                        <p className="blog-meta">
+                          {sectionNames[post.section] ||
+                            post.section}
+                          {' · '}
+                          {new Date(
+                            post.createdAt
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))
+                  )}
+
+                </article>
+              </>
+            )}
+
+          </div>
+
+          {/* RIGHT TOC */}
+          {activePost && headings.length > 0 && (
+            <aside className="blog-toc">
+              <div className="blog-toc-title">
+                On this page
+              </div>
+
+              <ul>
+                {headings.map((heading) => (
+                  <li
+                    key={heading.id}
+                    className={
+                      heading.level === 3
+                        ? 'toc-nested'
+                        : ''
+                    }
+                  >
+                    <a href={`#${heading.id}`}>
+                      {heading.text}
                     </a>
                   </li>
                 ))}
               </ul>
-            </nav>
-          </div>
-        </aside>
-
-        {/* MAIN DOCUMENT AREA */}
-        <main className="docMainContainer">
-
-          <div className="container padding-top--md padding-bottom--lg">
-            <div className="row">
-
-              <div className="col docItemCol">
-                <div className="docItemContainer">
-
-                  {activePost ? (
-                    <article>
-
-                      {/* Breadcrumbs */}
-                      <nav
-                        className="theme-doc-breadcrumbs breadcrumbs"
-                        aria-label="Breadcrumbs"
-                      >
-                        <a
-                          href="/blog"
-                          className="breadcrumbs__link"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            navigate({});
-                          }}
-                        >
-                          Blog
-                        </a>
-
-                        <span className="breadcrumbs__item breadcrumbs__item--active">
-                          <span className="breadcrumbs__link">
-                            {activePost.title}
-                          </span>
-                        </span>
-                      </nav>
-
-                      {/* Title */}
-                      <header>
-                        <h1>{activePost.title}</h1>
-
-                        <div className="theme-doc-version-badge">
-                          {sections.find(
-                            ([value]) =>
-                              value === activePost.section
-                          )?.[1] || activePost.section}
-                          {' · '}
-                          {new Date(
-                            activePost.createdAt
-                          ).toLocaleDateString()}
-                        </div>
-                      </header>
-
-                      {/* Markdown */}
-                      <div className="theme-doc-markdown markdown">
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          rehypePlugins={[rehypeRaw]}
-                          components={{
-                            h2: ({
-                              children,
-                              ...props
-                            }) => {
-                              const text =
-                                getText(children);
-
-                              return (
-                                <h2
-                                  id={slugify(text)}
-                                  {...props}
-                                >
-                                  {children}
-                                </h2>
-                              );
-                            },
-
-                            h3: ({
-                              children,
-                              ...props
-                            }) => {
-                              const text =
-                                getText(children);
-
-                              return (
-                                <h3
-                                  id={slugify(text)}
-                                  {...props}
-                                >
-                                  {children}
-                                </h3>
-                              );
-                            },
-                          }}
-                        >
-                          {activePost.content}
-                        </ReactMarkdown>
-                      </div>
-
-                    </article>
-                  ) : (
-                    <article>
-
-                      <nav
-                        className="theme-doc-breadcrumbs breadcrumbs"
-                        aria-label="Breadcrumbs"
-                      >
-                        <span className="breadcrumbs__item breadcrumbs__item--active">
-                          <span className="breadcrumbs__link">
-                            Blog
-                          </span>
-                        </span>
-                      </nav>
-
-                      <header>
-                        <h1>
-                          {activeSection
-                            ? sections.find(
-                                ([value]) =>
-                                  value === activeSection
-                              )?.[1] || 'Blog'
-                            : 'Blog'}
-                        </h1>
-                      </header>
-
-                      <div className="theme-doc-markdown markdown">
-                        {filteredPosts.length === 0 ? (
-                          <p>No posts yet.</p>
-                        ) : (
-                          filteredPosts.map((post) => (
-                            <div key={post.id}>
-                              <h2>
-                                <a
-                                  href={`/blog?slug=${post.slug}`}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate({
-                                      slug: post.slug,
-                                    });
-                                  }}
-                                >
-                                  {post.title}
-                                </a>
-                              </h2>
-
-                              <p>
-                                <small>
-                                  {sections.find(
-                                    ([value]) =>
-                                      value === post.section
-                                  )?.[1] ||
-                                    post.section}
-                                  {' · '}
-                                  {new Date(
-                                    post.createdAt
-                                  ).toLocaleDateString()}
-                                </small>
-                              </p>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                    </article>
-                  )}
-
-                </div>
-              </div>
-
-              {/* RIGHT TOC */}
-              {activePost && headings.length > 0 && (
-                <div className="col col--3">
-                  <div className="tableOfContents">
-                    <nav
-                      className="table-of-contents"
-                      aria-label="On this page"
-                    >
-                      <h3>On this page</h3>
-
-                      <ul>
-                        {headings.map((heading) => (
-                          <li key={heading.id}>
-                            <a
-                              href={`#${heading.id}`}
-                              className={
-                                heading.level === 3
-                                  ? 'table-of-contents__link toc-nested'
-                                  : 'table-of-contents__link'
-                              }
-                            >
-                              {heading.text}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </nav>
-                  </div>
-                </div>
-              )}
-
-            </div>
-          </div>
+            </aside>
+          )}
 
         </main>
+
       </div>
+
     </Layout>
   );
 }

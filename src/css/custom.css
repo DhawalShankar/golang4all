@@ -1,14 +1,218 @@
-/* .markdown-body img {
-  max-width: 100%;
-  width: auto;
-  max-height: 350px;
-  object-fit: contain;
-} */
-.markdown img {
-  max-width: 100%;
-  height: auto;
+/* =========================================================
+   GolangForAll Blog
+   ========================================================= */
+
+.blog-layout {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - var(--ifm-navbar-height));
 }
+
+/* -------------------------
+   LEFT SIDEBAR
+   ------------------------- */
+
+.blog-sidebar {
+  width: var(--doc-sidebar-width, 300px);
+  flex-shrink: 0;
+  border-right: 1px solid var(--ifm-color-emphasis-200);
+  padding: 1.25rem 0.75rem;
+}
+
+.blog-sidebar > * {
+  width: 100%;
+}
+
+/* -------------------------
+   MAIN AREA
+   ------------------------- */
+
+.blog-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  position: relative;
+}
+
+.blog-content {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 3rem 4rem;
+  max-width: 1000px;
+}
+
+/* -------------------------
+   BREADCRUMBS
+   ------------------------- */
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.breadcrumbs a {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.breadcrumb-active {
+  padding: 0.55rem 0.9rem;
+  border-radius: 2rem;
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-primary);
+}
+
+/* -------------------------
+   DOCUMENT
+   ------------------------- */
 
 .theme-doc-markdown {
   max-width: none;
+}
+
+.theme-doc-markdown h1 {
+  font-size: 3rem;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.theme-doc-markdown h2 {
+  margin-top: 3rem;
+}
+
+.theme-doc-markdown h3 {
+  margin-top: 2rem;
+}
+
+/* -------------------------
+   POST META
+   ------------------------- */
+
+.blog-meta {
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+}
+
+/* -------------------------
+   POST LIST
+   ------------------------- */
+
+.blog-post-preview {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.blog-post-preview h2 {
+  margin: 0 0 0.4rem;
+}
+
+.blog-post-preview h2 a {
+  text-decoration: none;
+}
+
+/* -------------------------
+   RIGHT TOC
+   ------------------------- */
+
+.blog-toc {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 1.5rem 1.5rem 2rem 0;
+  position: sticky;
+  top: calc(var(--ifm-navbar-height) + 1rem);
+  height: fit-content;
+  max-height: calc(100vh - var(--ifm-navbar-height) - 2rem);
+  overflow-y: auto;
+}
+
+.blog-toc-title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.blog-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.blog-toc li {
+  margin: 0.45rem 0;
+}
+
+.blog-toc li.toc-nested {
+  padding-left: 1rem;
+}
+
+.blog-toc a {
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.blog-toc a:hover {
+  color: var(--ifm-color-primary);
+}
+
+/* -------------------------
+   IMAGES
+   ------------------------- */
+
+.theme-doc-markdown img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* -------------------------
+   LOADING
+   ------------------------- */
+
+.blog-loading {
+  padding: 4rem;
+  text-align: center;
+}
+
+/* -------------------------
+   MOBILE
+   ------------------------- */
+
+@media (max-width: 996px) {
+  .blog-sidebar {
+    width: 240px;
+  }
+
+  .blog-content {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .blog-toc {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .blog-layout {
+    display: block;
+  }
+
+  .blog-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  }
+
+  .blog-content {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .theme-doc-markdown h1 {
+    font-size: 2.25rem;
+  }
 }
