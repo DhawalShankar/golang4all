@@ -11,6 +11,7 @@ const config = {
       '@docusaurus/preset-classic',
       {
         docs: { path: 'docs' },
+        about: { path: 'about' },
         blog: false, // dynamic posts are served via /api, not Docusaurus blog plugin
       },
     ],

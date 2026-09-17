@@ -7,10 +7,11 @@ export default function AdminPanel() {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [content, setContent] = useState('');
-  const [section, setSection] = useState('tutorials');
+  const [section, setSection] = useState('fundamentals');
   const [authToken, setAuthToken] = useState('');
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState(null); // null = create mode, else = editing this post's id
 
   const textareaRef = useRef(null);
 
@@ -23,8 +24,6 @@ export default function AdminPanel() {
     }
   }, [authToken]);
 
-  // Inserts text at the current cursor position inside the textarea,
-  // then moves the cursor to just after the inserted text.
   const insertAtCursor = (textToInsert) => {
     const textarea = textareaRef.current;
     if (!textarea) {
@@ -38,7 +37,6 @@ export default function AdminPanel() {
     const updated = before + textToInsert + after;
     setContent(updated);
 
-    // restore focus + cursor position after React re-renders
     requestAnimationFrame(() => {
       textarea.focus();
       const cursorPos = start + textToInsert.length;
@@ -72,29 +70,57 @@ export default function AdminPanel() {
       setError('Upload failed');
     } finally {
       setUploading(false);
-      e.target.value = ''; // allow re-selecting the same file again
+      e.target.value = '';
     }
   };
 
-  const handleCreatePost = async (e) => {
+  const resetForm = () => {
+    setEditingId(null);
+    setTitle('');
+    setSlug('');
+    setContent('');
+    setSection('fundamentals');
+  };
+
+  const startEdit = (post) => {
+    setEditingId(post.id);
+    setTitle(post.title);
+    setSlug(post.slug);
+    setContent(post.content);
+    setSection(post.section);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const res = await fetch('/api/posts', {
-      method: 'POST',
+
+    const isEditing = editingId !== null;
+    const url = '/api/posts';
+    const method = isEditing ? 'PUT' : 'POST';
+    const body = isEditing
+      ? { id: editingId, title, slug, content, section }
+      : { title, slug, content, section };
+
+    const res = await fetch(url, {
+      method,
       headers: {
         'Content-Type': 'application/json',
         'X-Admin-Auth': authToken,
       },
-      body: JSON.stringify({ title, slug, content, section }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
+
     if (res.ok) {
-      setPosts([data, ...posts]);
-      setTitle('');
-      setSlug('');
-      setContent('');
+      if (isEditing) {
+        setPosts(posts.map((p) => (p.id === editingId ? data : p)));
+      } else {
+        setPosts([data, ...posts]);
+      }
+      resetForm();
     } else {
-      setError(data.error || 'Create failed');
+      setError(data.error || (isEditing ? 'Update failed' : 'Create failed'));
     }
   };
 
@@ -105,6 +131,7 @@ export default function AdminPanel() {
     });
     if (res.ok) {
       setPosts(posts.filter((p) => p.id !== id));
+      if (editingId === id) resetForm(); // agar jo post edit ho raha tha wahi delete ho gaya
     } else {
       const data = await res.json();
       setError(data.error || 'Delete failed');
@@ -132,15 +159,22 @@ export default function AdminPanel() {
         <h1>Content Console</h1>
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        <form onSubmit={handleCreatePost} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
+          {editingId && (
+            <p style={{ fontSize: '0.85rem', opacity: 0.8 }}>
+              Editing post — <button type="button" onClick={resetForm} style={{ textDecoration: 'underline' }}>cancel</button>
+            </p>
+          )}
           <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
           <input placeholder="Slug (unique, url-safe)" value={slug} onChange={(e) => setSlug(e.target.value)} required />
-          <select value={section} onChange={(e) => setSection(e.target.value)}>
-            <option value="tutorials">Core Tutorials</option>
-            <option value="india-tech">India Tech Stack</option>
-            <option value="jobs">Job Listings</option>
-            <option value="news">News</option>
-            <option value="meetups">Local Meetups</option>
+         <select value={section} onChange={(e) => setSection(e.target.value)}>
+              <option value="fundamentals">Fundamentals</option>
+              <option value="backend">Backend Engineering</option>
+              <option value="systems">Systems &amp; Concurrency</option>
+              <option value="projects">Build Logs</option>
+              <option value="now">Now</option>
+              <option value="meetups">Meetups</option>
+              <option value="announcements">Announcements</option>
           </select>
 
           <div>
@@ -153,7 +187,7 @@ export default function AdminPanel() {
 
           <textarea
             ref={textareaRef}
-            placeholder="Content (markdown) — click anywhere here, then upload an image to insert it at that exact spot"
+            placeholder="Content (markdown)"
             rows="16"
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -161,15 +195,18 @@ export default function AdminPanel() {
             required
           />
 
-          <button type="submit">Publish</button>
+          <button type="submit">{editingId ? 'Update' : 'Publish'}</button>
         </form>
 
         <h3>Posts</h3>
         <ul>
           {posts.map((post) => (
-            <li key={post.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #ccc', padding: '0.5rem 0' }}>
+            <li key={post.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc', padding: '0.5rem 0' }}>
               <span>[{post.section}] {post.title}</span>
-              <button onClick={() => handleDeletePost(post.id)}>Delete</button>
+              <span style={{ display: 'flex', gap: '0.5rem' }}>
+                <button onClick={() => startEdit(post)}>Edit</button>
+                <button onClick={() => handleDeletePost(post.id)}>Delete</button>
+              </span>
             </li>
           ))}
         </ul>
