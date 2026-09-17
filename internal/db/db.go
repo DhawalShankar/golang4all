@@ -1,3 +1,4 @@
+// db.go
 // Package db provides a shared NeonDB (Postgres) connection pool for the
 // api/* serverless functions. Initialized once per warm instance since
 // Vercel's Go runtime has no dedicated cold-start hook (PRD §2.1 / §6).
