@@ -1,6 +1,8 @@
 // src/pages/blog/index.js
 import React, { useState, useEffect } from 'react';
 import Layout from '@theme/Layout';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
@@ -44,7 +46,9 @@ export default function Blog() {
           <p style={{ opacity: 0.6, fontSize: '0.85rem' }}>
             {post.section} · {new Date(post.createdAt).toLocaleDateString()}
           </p>
-          <div style={{ whiteSpace: 'pre-wrap', marginTop: '2rem' }}>{post.content}</div>
+          <div className="markdown-body" style={{ marginTop: '2rem' }}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
+          </div>
         </main>
       </Layout>
     );
