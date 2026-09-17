@@ -14,24 +14,24 @@ const config = {
       {
         docs: {
           path: 'docs',
+          sidebarPath: './sidebars.js',
         },
-
         blog: false,
-
         pages: {},
       },
     ],
   ],
-
+  
   themeConfig: {
-    favicon: 'img/logo.png',
+    favicon: 'img/favicon.ico',
 
     navbar: {
       title: 'GolangForAll',
-      logo: {
-        alt: 'GolangForAll Logo',
-        src: 'img/logo.png',
-      },
+      logo: { alt: 'GolangForAll Logo', src: 'img/logo.png' },
+      items: [
+        { to: '/blog', label: 'Blog', position: 'left' },
+        { to: '/docs/intro', label: 'Docs', position: 'left' },
+      ],
     },
   },
 };

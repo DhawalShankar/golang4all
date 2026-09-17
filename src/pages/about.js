@@ -4,9 +4,19 @@ import Layout from '@theme/Layout';
 
 export default function About() {
   return (
-    <Layout title="About" description="About golangforall.in and its author">
+    <Layout title="About" description="About GolangForAll and how it started">
       <main style={{ padding: '4rem 2rem', maxWidth: '720px', margin: '0 auto' }}>
-        <h1>About golangforall.in</h1>
+        <h1>About GolangForAll</h1>
+
+        <p>
+          GolangForAll is a community initiative for people who learn, build,
+          teach, and contribute with Go — through meetups, talks, projects,
+          and a blog written by people actually working with the language.
+          It isn't affiliated with go.dev; we're not here to replace the
+          official docs, just to bring the people around them together.
+        </p>
+
+        <h2>How it started</h2>
 
         <p>
           I'm Dhawal Shukla, a backend engineer working primarily with Go,
@@ -18,31 +28,41 @@ export default function About() {
         </p>
 
         <p>
-          golangforall.in exists because most Go content online either stops
-          at syntax or assumes you already know why the language is built
-          the way it is. I wanted a place that closes that gap — explaining
-          not just how Go works, but why it's designed that way, and when
-          to actually reach for it.
+          Most Go content online either stops at syntax or assumes you
+          already know why the language is built the way it is. GolangForAll
+          started as an attempt to close that gap — and quickly became less
+          about one person's writing and more about getting developers in
+          the same room, in person and on WhatsApp, to actually talk about
+          this stuff.
+        </p>
+
+        <h2>Where it's headed</h2>
+
+        <p>
+          Right now that means meetups around NCR and Kanpur/Lucknow, a
+          community WhatsApp group, and a blog open to anyone who wants to
+          write about what they've actually built. See{' '}
+          <a href="/docs/contribute">Contribute</a> if you want to speak,
+          write, or host a meetup in your own city.
         </p>
 
         <p>
-          Everything here is written from the same place I build from:
-          real projects, real production decisions, and the mistakes that
-          came with them. You can find my other work and background on{' '}
+          You can find my own work and background on{' '}
           <a href="https://github.com/DhawalShankar" target="_blank" rel="noopener noreferrer">
             GitHub
           </a>{' '}
           and{' '}
           <a href="https://www.linkedin.com/in/dhawalshukl/" target="_blank" rel="noopener noreferrer">
             LinkedIn
-          </a>.
+          </a>. For anything about the community itself, reach out at{' '}
+          <a href="mailto:work.dshukla@gmail.com">work.dshukla@gmail.com</a>.
         </p>
 
         <hr style={{ margin: '2rem 0' }} />
 
         <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>
-          <strong>Disclaimer:</strong> golangforall.in is an independent,
-          individually-run educational resource. It is not affiliated with,
+          <strong>Disclaimer:</strong> GolangForAll (golangforall.in) is an
+          independent, community-run initiative. It is not affiliated with,
           endorsed by, or connected to golangforall.com or any other
           similarly-named platform, organization, or entity.
         </p>
