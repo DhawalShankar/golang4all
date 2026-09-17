@@ -3,7 +3,7 @@ import Layout from '@theme/Layout';
 import clsx from 'clsx';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
+import rehypeRaw from 'rehype-raw';
 import styles from './styles.module.css';
 
 const SECTIONS = [
@@ -207,6 +207,7 @@ export default function Blog() {
                 <div className={styles.markdown}>
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
                     components={{
                       h2: ({children}) => {
                         const text = String(children);
