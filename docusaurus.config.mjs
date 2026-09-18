@@ -4,6 +4,25 @@ const config = {
   url: 'https://golangforall.in',
   baseUrl: '/',
 
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: {
+        async: true,
+        src: 'https://www.googletagmanager.com/gtag/js?id=G-RQWQW3BSZB',
+      },
+    },
+    {
+      tagName: 'script',
+      innerHTML: `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RQWQW3BSZB');
+      `,
+    },
+  ],
+
   onBrokenLinks: 'warn',
   onBrokenAnchors: 'warn',
   onBrokenMarkdownLinks: 'warn',
@@ -31,6 +50,7 @@ const config = {
         alt: 'GolangForAll Logo',
         src: 'img/logo.png',
       },
+
       items: [
         {
           to: '/about',
