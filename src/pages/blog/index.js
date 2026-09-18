@@ -8,9 +8,9 @@ import styles from './styles.module.css';
 
 const SECTIONS = [
   {key: 'fundamentals', label: 'Fundamentals'},
-  {key: 'backend-engineering', label: 'Backend Engineering'},
-  {key: 'systems-concurrency', label: 'Systems & Concurrency'},
-  {key: 'build-logs', label: 'Build Logs'},
+  {key: 'backend', label: 'Backend Engineering'},
+  {key: 'systems', label: 'Systems & Concurrency'},
+  {key: 'projects', label: 'Build Logs'},
   {key: 'now', label: 'Now'},
   {key: 'meetups', label: 'Meetups'},
   {key: 'announcements', label: 'Announcements'},
