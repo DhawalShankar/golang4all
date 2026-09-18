@@ -14,6 +14,7 @@ const config = {
     },
     {
       tagName: 'script',
+      attributes: {},
       innerHTML: `
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
