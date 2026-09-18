@@ -65,7 +65,7 @@ export default function Home() {
           </a>
 
           <a
-            href="https://chat.whatsapp.com/G642UWUIanCJjF8jzavUPA"
+            href="https://whatsapp.com/channel/0029VbDoRp9JP214yrRcCS2I"
             style={{
               padding: '0.75rem 1.5rem',
               border: '1px solid #00ADD8',
