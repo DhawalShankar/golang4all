@@ -1,3 +1,8 @@
+.markdown h2,
+.markdown h3 {
+  scroll-margin-top: 80px;
+}
+
 .blogPage {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr) 250px;
