@@ -68,6 +68,11 @@ const config = {
           label: 'Docs',
           position: 'left',
         },
+        {
+          href: 'https://golab.golangforall.in',
+          label: 'GoLab',
+          position: 'left',
+        },
       ],
     },
   },
